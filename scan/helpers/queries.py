@@ -1,20 +1,26 @@
-import time
-import os
 import json
-
-from ctypes import c_ulonglong, c_longlong
 from datetime import datetime
-from MySQLdb import Timestamp
-from django.conf import settings
-
-from django.db.models import F, OuterRef, Q, Sum
 
 from cache_memoize import cache_memoize
+from django.conf import settings
+from django.db.models import F, OuterRef, Q, Sum
+
 from burst.api.brs.v1.api import BrsApi
 from burst.constants import BLOCK_CHAIN_START_AT, TxSubtypeBurstMining, TxSubtypeColoredCoins, TxType
 from java_wallet.fields import get_desc_tx_type
-
-from java_wallet.models import Account, AccountBalance, Alias, Asset, At, AtState, Block, RewardRecipAssign, Trade, Transaction,IndirectIncoming, Subscription
+from java_wallet.models import (
+    Account,
+    AccountBalance,
+    Alias,
+    Asset,
+    At,
+    AtState,
+    Block,
+    RewardRecipAssign,
+    Subscription,
+    Trade,
+    Transaction,
+)
 
 
 @cache_memoize(3600)
@@ -22,19 +28,14 @@ def get_account_name(account_id: int) -> str:
     if account_id == 0:
         return "Burn Address"
     account_name = (
-        Account.objects.using("java_wallet")
-        .filter(id=account_id, latest=True)
-        .values_list("name", flat=True)
-        .first()
+        Account.objects.using("java_wallet").filter(id=account_id, latest=True).values_list("name", flat=True).first()
     )
     if not account_name:
         account_name = (
-            At.objects.using("java_wallet")
-            .filter(id=account_id, latest=True)
-            .values_list("name", flat=True)
-            .first()
+            At.objects.using("java_wallet").filter(id=account_id, latest=True).values_list("name", flat=True).first()
         )
     return account_name
+
 
 @cache_memoize(240)
 def get_account_balance(account_id: int) -> str:
@@ -46,35 +47,36 @@ def get_account_balance(account_id: int) -> str:
     )
     if account_balance:
         return account_balance
-    else :
+    else:
         return 0
-    
+
+
 @cache_memoize(240)
 def get_registered_tld_name(tld_id: int) -> str:
-    tld_name= (
-        Alias.objects.using("java_wallet")
-        .filter(id=tld_id, latest=True)
-        .first()
-    )
+    tld_name = Alias.objects.using("java_wallet").filter(id=tld_id, latest=True).first()
     return tld_name.alias_name
+
 
 @cache_memoize(240)
 def get_tld_reciever_id(sub_id: int) -> str:
     check_sub = Subscription.objects.using("java_wallet").filter(id=sub_id, latest=True).first()
-    check_alias = Alias.objects.using("java_wallet").filter(id = check_sub.id, latest=True).first()
+    check_alias = Alias.objects.using("java_wallet").filter(id=check_sub.id, latest=True).first()
     if check_alias:
-        check_tld = Alias.objects.using("java_wallet").filter(id = check_alias.tld, latest=True).first()
+        check_tld = Alias.objects.using("java_wallet").filter(id=check_alias.tld, latest=True).first()
         return check_tld.account_id
     return check_sub.recipient_id
 
+
 @cache_memoize(240)
-def get_subscription_recipient_id(sub_id:int):
+def get_subscription_recipient_id(sub_id: int):
     check_sub = Subscription.objects.using("java_wallet").filter(id=sub_id, latest=True).first()
     return check_sub.recipient_id
 
-def get_subscription_alias(sub_id:int):
-    check_alias = Alias.objects.using("java_wallet").filter(id = sub_id, latest=True).first()
-    return check_alias.alias_name,check_alias.tld
+
+def get_subscription_alias(sub_id: int):
+    check_alias = Alias.objects.using("java_wallet").filter(id=sub_id, latest=True).first()
+    return check_alias.alias_name, check_alias.tld
+
 
 @cache_memoize(200)
 def get_account_unconfirmed_balance(account_id: int) -> str:
@@ -89,26 +91,25 @@ def get_account_unconfirmed_balance(account_id: int) -> str:
     else:
         return 0
 
+
 @cache_memoize(3600)
-def get_details_by_tx(transaction_id:int) -> ( int, int,int):
+def get_details_by_tx(transaction_id: int) -> (int, int, int):
     # Value = Sender, Reciepent,Timestamp
     transactions_data = (
         Transaction.objects.using("java_wallet")
-        .filter(id =transaction_id )
-        .values_list("recipient_id","sender_id","timestamp")
+        .filter(id=transaction_id)
+        .values_list("recipient_id", "sender_id", "timestamp")
         .first()
     )
     return transactions_data
 
+
 @cache_memoize(3600)
-def get_single_tx_class(transaction_id:int):
+def get_single_tx_class(transaction_id: int):
     # Value = Sender, Reciepent,Timestamp
-    transactions_data = (
-        Transaction.objects.using("java_wallet")
-        .filter(id =transaction_id )
-        .first()
-    )
+    transactions_data = Transaction.objects.using("java_wallet").filter(id=transaction_id).first()
     return transactions_data
+
 
 # @cache_memoize(None)
 def get_ap_code(ap_code_hash_id: int) -> bytearray:
@@ -120,40 +121,39 @@ def get_ap_code(ap_code_hash_id: int) -> bytearray:
     )
     return ap_code
 
+
 def get_at_state(id: int) -> (bytearray, int):
-    return (        
+    return (
         AtState.objects.using("java_wallet")
         .filter(at_id=id, latest=True)
         .values_list("state", "min_activate_amount")
         .first()
-        )
+    )
+
 
 @cache_memoize(None)
 def check_is_contract(account_id: int) -> bool:
-    at_id = (
-            At.objects.using("java_wallet")
-            .filter(id=account_id, latest=True)
-            .values_list("id", flat=True)
-            .first()
-        )
-    return at_id != None
+    at_id = At.objects.using("java_wallet").filter(id=account_id, latest=True).values_list("id", flat=True).first()
+    return at_id is not None
+
 
 @cache_memoize(None)
-
-def query_asset_fullhash(asset) ->(str):
-    full_hash = (Transaction.objects.using("java_wallet")
-        .values_list('full_hash', flat=True)
-        .filter(id=asset.asset_id).first()
+def query_asset_fullhash(asset) -> str:
+    full_hash = (
+        Transaction.objects.using("java_wallet").values_list("full_hash", flat=True).filter(id=asset.asset_id).first()
     )
     return full_hash
-def query_asset_treasury_acc(asset, account_id) -> (str):
-    add_treasury = (Transaction.objects.using("java_wallet")
-        .values_list('referenced_transaction_fullhash', flat=True)
-        .filter(type=TxType.COLORED_COINS,
-            subtype=TxSubtypeColoredCoins.ADD_TREASURY_ACCOUNT,
-            recipient_id=account_id).all()
+
+
+def query_asset_treasury_acc(asset, account_id) -> str:
+    add_treasury = (
+        Transaction.objects.using("java_wallet")
+        .values_list("referenced_transaction_fullhash", flat=True)
+        .filter(type=TxType.COLORED_COINS, subtype=TxSubtypeColoredCoins.ADD_TREASURY_ACCOUNT, recipient_id=account_id)
+        .all()
     )
     return add_treasury
+
 
 @cache_memoize(None)
 def get_asset_details(asset_id: int) -> (str, int, int, bool):
@@ -162,8 +162,9 @@ def get_asset_details(asset_id: int) -> (str, int, int, bool):
         .filter(id=asset_id)
         .values_list("name", "decimals", "quantity", "mintable")
         .first()
-        )
+    )
     return asset_details
+
 
 @cache_memoize(None)
 def get_asset_details_owner(asset_id: int) -> (str, int, int, bool, int):
@@ -172,8 +173,9 @@ def get_asset_details_owner(asset_id: int) -> (str, int, int, bool, int):
         .filter(id=asset_id)
         .values_list("name", "decimals", "quantity", "mintable", "account_id")
         .first()
-        )
+    )
     return asset_details
+
 
 @cache_memoize(None)
 def get_txs_count_in_block(block_id: int) -> int:
@@ -184,19 +186,25 @@ def get_pool_id_for_block(block: Block) -> int:
     elapsed = datetime.now() - block.timestamp
 
     # For the more recent blocks we do not use the cache, since we could have short lived forks
-    if elapsed.total_seconds() < 240*4:
+    if elapsed.total_seconds() < 240 * 4:
         return get_pool_id_for_block_db(block)
     return get_pool_id_for_block_cached(block)
+
 
 def get_pool_id_for_block_db(block: Block) -> int:
     return (
         Transaction.objects.using("java_wallet")
-        .filter(type=TxType.BURST_MINING, subtype=TxSubtypeBurstMining.REWARD_RECIPIENT_ASSIGNMENT,
-            height__lte=block.height, sender_id=block.generator_id)
+        .filter(
+            type=TxType.BURST_MINING,
+            subtype=TxSubtypeBurstMining.REWARD_RECIPIENT_ASSIGNMENT,
+            height__lte=block.height,
+            sender_id=block.generator_id,
+        )
         .values_list("recipient_id", flat=True)
         .order_by("-height")
         .first()
     )
+
 
 @cache_memoize(240)
 def get_total_circulating():
@@ -204,33 +212,29 @@ def get_total_circulating():
         AccountBalance.objects.using("java_wallet")
         .filter(latest=True)
         .exclude(id=0)
-        .aggregate(Sum("balance"))["balance__sum"] 
-    )  
+        .aggregate(Sum("balance"))["balance__sum"]
+    )
+
 
 @cache_memoize(3600)
 def get_total_accounts_count():
-    return (
-        Account.objects.using("java_wallet")
-        .filter(latest=True)
-        .exclude(id=0)
-        .count()
-    )
+    return Account.objects.using("java_wallet").filter(latest=True).exclude(id=0).count()
+
 
 @cache_memoize(300)
-def get_asset_price(asset_id : int) -> float:
-    latest_trade = assets_trades = (
-        Trade.objects.using("java_wallet")
-        .using("java_wallet")
-        .filter(asset_id=asset_id)
-        .order_by("-height").first()
+def get_asset_price(asset_id: int) -> float:
+    latest_trade = (
+        Trade.objects.using("java_wallet").using("java_wallet").filter(asset_id=asset_id).order_by("-height").first()
     )
     if latest_trade:
         return latest_trade.price
     return 0
 
+
 @cache_memoize(None)
 def get_pool_id_for_block_cached(block: Block) -> int:
     return get_pool_id_for_block_db(block)
+
 
 @cache_memoize(3600)
 def get_pool_id_for_account(address_id: int) -> int:
@@ -248,25 +252,19 @@ def get_unconfirmed_transactions():
     txs_pending = BrsApi(settings.SIGNUM_NODE).get_unconfirmed_transactions()
 
     for t in txs_pending:
-        t["timestamp"] = datetime.fromtimestamp(
-            t["timestamp"] + BLOCK_CHAIN_START_AT
-        )
+        t["timestamp"] = datetime.fromtimestamp(t["timestamp"] + BLOCK_CHAIN_START_AT)
         t["amountNQT"] = int(t["amountNQT"])
         t["feeNQT"] = int(t["feeNQT"])
         t["sender_name"] = get_account_name(int(t["sender"]))
 
         if "recipient" in t:
-            t["recipient_exists"] = (
-                Account.objects.using("java_wallet")
-                .filter(id=t["recipient"])
-                .exists()
-            )
+            t["recipient_exists"] = Account.objects.using("java_wallet").filter(id=t["recipient"]).exists()
             if t["recipient_exists"]:
                 t["recipient_name"] = get_account_name(int(t["recipient"]))
 
         t["attachment_bytes"] = None
         if "attachmentBytes" in t:
-            t["attachment_bytes"] =  bytes.fromhex(t["attachmentBytes"])
+            t["attachment_bytes"] = bytes.fromhex(t["attachmentBytes"])
         if "attachment" in t and "recipients" in t["attachment"]:
             t["multiout"] = len(t["attachment"]["recipients"])
 
@@ -288,30 +286,21 @@ def get_description_url(pool_id: int) -> str:
     try:
         return json.loads(description)["hp"]
     except (json.JSONDecodeError, TypeError, KeyError):
-        return ''
+        return ""
 
 
 def get_count_of_miners(pool_id: int) -> int:
-    return (
-        RewardRecipAssign.objects.using("java_wallet")
-        .filter(recip_id=pool_id)
-        .filter(latest=1)
-    ).count()
+    return (RewardRecipAssign.objects.using("java_wallet").filter(recip_id=pool_id).filter(latest=1)).count()
 
 
 def get_timestamp_of_block(height: int) -> datetime:
-    return (
-        Block.objects.using("java_wallet")
-        .filter(height=height)
-        .values_list("timestamp", flat=True)
-        .first()
-    )
+    return Block.objects.using("java_wallet").filter(height=height).values_list("timestamp", flat=True).first()
 
 
 def get_forged_blocks_of_pool(pool_id):
     miners = (
         RewardRecipAssign.objects.using("java_wallet")
-        .filter(~Q(recip_id=F('account_id')))
+        .filter(~Q(recip_id=F("account_id")))
         .filter(height__lte=OuterRef("height"))
         .filter(recip_id=pool_id)
         .filter(latest=1)

@@ -1,13 +1,7 @@
 from django.db.models import F, OuterRef, Q
 from django.views.generic import ListView
 
-from java_wallet.models import (
-    Account,
-    Block,
-    IndirectIncoming,
-    RewardRecipAssign,
-    Transaction,
-)
+from java_wallet.models import Account, Block, IndirectIncoming, RewardRecipAssign, Transaction
 from scan.caching_paginator import CachingPaginator
 from scan.helpers.queries import (
     get_account_name,
@@ -30,7 +24,7 @@ class PoolListView(ListView):
     model = RewardRecipAssign
     queryset = (
         RewardRecipAssign.objects.using("java_wallet")
-        .filter(~Q(recip_id=F('account_id')))
+        .filter(~Q(recip_id=F("account_id")))
         .values("recip_id", "account_id")
     )
     template_name = "pools/list.html"
@@ -41,20 +35,13 @@ class PoolListView(ListView):
 
     def get_queryset(self):
         qs = self.queryset
-        query_block = (
-            Block.objects.using("java_wallet")
-            .values("generator_id", "height")
-            .all()
-        )
+        query_block = Block.objects.using("java_wallet").values("generator_id", "height").all()
         query_from_query_block = (
-            query_block
-            .annotate(
-                pool_id=qs
-                .filter(height__lte=OuterRef("height"))
+            query_block.annotate(
+                pool_id=qs.filter(height__lte=OuterRef("height"))
                 .filter(account_id=OuterRef("generator_id"))
                 .order_by("-height")
-                .values("recip_id")
-                [:1]
+                .values("recip_id")[:1]
             )
             .order_by("-height")
             .values("pool_id", "height")
@@ -62,13 +49,8 @@ class PoolListView(ListView):
             .exclude(pool_id__isnull=True)
         )
         query_from_queryset = (
-            qs
-            .annotate(
-                block=query_block
-                .filter(generator_id=OuterRef("account_id"))
-                .order_by("-height")
-                .values("height")
-                [:1]
+            qs.annotate(
+                block=query_block.filter(generator_id=OuterRef("account_id")).order_by("-height").values("height")[:1]
             )
             .order_by("-block")
             .values("recip_id", "block")
@@ -83,10 +65,7 @@ class PoolListView(ListView):
                 pool_s_last_forged_blocks.append(query["block"])
                 pools_list.append(query["recip_id"])
 
-        return (
-            query_from_query_block
-            .filter(height__in=pool_s_last_forged_blocks)
-        )
+        return query_from_query_block.filter(height__in=pool_s_last_forged_blocks)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,25 +96,19 @@ class PoolDetailView(IntSlugDetailView):
         # transactions
         indirects_query = (
             IndirectIncoming.objects.using("java_wallet")
-            .values_list('transaction_id', flat=True)
+            .values_list("transaction_id", flat=True)
             .filter(account_id=obj.id)
         )
         indirects_count = indirects_query.count()
 
-        txs_query = (
-            Transaction.objects.using("java_wallet")
-            .filter(Q(sender_id=obj.id) | Q(recipient_id=obj.id))
-        )
+        txs_query = Transaction.objects.using("java_wallet").filter(Q(sender_id=obj.id) | Q(recipient_id=obj.id))
         txs_cnt = txs_query.count() + indirects_count
 
         if indirects_count > 0:
-            txs_indirects = (
-                Transaction.objects.using("java_wallet")
-                .filter(id__in=indirects_query)
-            )
+            txs_indirects = Transaction.objects.using("java_wallet").filter(id__in=indirects_query)
             txs_query = txs_query.union(txs_indirects)
 
-        txs = txs_query.order_by("-height")[:min(txs_cnt, 15)]
+        txs = txs_query.order_by("-height")[: min(txs_cnt, 15)]
 
         for t in txs:
             fill_data_transaction(t, list_page=True)
@@ -147,13 +120,13 @@ class PoolDetailView(IntSlugDetailView):
 
         miners_query = (
             RewardRecipAssign.objects.using("java_wallet")
-            .filter(~Q(recip_id=F('account_id')))
+            .filter(~Q(recip_id=F("account_id")))
             .filter(recip_id=obj.id)
             .filter(latest=1)
             .values("recip_id", "account_id", "height")
         )
 
-        miners = miners_query.order_by('-height')
+        miners = miners_query.order_by("-height")
 
         miners = miners[:25]
         for miner in miners:

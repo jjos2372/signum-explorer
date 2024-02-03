@@ -10,7 +10,7 @@ class MinerListView(ListView):
     model = RewardRecipAssign
     queryset = (
         RewardRecipAssign.objects.using("java_wallet")
-        .filter(~Q(recip_id=F('account_id')))
+        .filter(~Q(recip_id=F("account_id")))
         .filter(latest=1)
         .values("recip_id", "account_id", "height")
     )
@@ -23,8 +23,8 @@ class MinerListView(ListView):
     def get_queryset(self):
         qs = self.queryset
         qs = qs.filter(latest=True)
-        if 'a' in self.request.GET:
-            qs = qs.filter(recip_id=self.request.GET['a'], latest=1)
+        if "a" in self.request.GET:
+            qs = qs.filter(recip_id=self.request.GET["a"], latest=1)
         return qs.order_by(self.ordering)
 
     def get_context_data(self, **kwargs):

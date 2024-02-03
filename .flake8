@@ -1,0 +1,11 @@
+[flake8]
+max-line-length = 120
+extend-ignore = E203, E704
+extend-exclude = 
+    migrations,
+    .git,
+    __pycache__,
+    .tox,
+    .eggs,
+    *.egg,
+    *env*

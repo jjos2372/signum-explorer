@@ -42,16 +42,16 @@ class BrsApiBase:
         self._session = session()
 
     def _close_session(self) -> None:
-        """ Close session if exists"""
+        """Close session if exists"""
         if self._session:
             self._session.close()
 
     def __del__(self) -> None:
-        """ Destructor """
+        """Destructor"""
         self._close_session()
 
     def _request(self, query: queries.QueryBase) -> JSONType:
-        """ Make HTTP request using requests module """
+        """Make HTTP request using requests module"""
         url = f"{self.node_url}/{self.endpoint}"
 
         try:
@@ -89,7 +89,7 @@ class BrsApi(BrsApiBase):
 
     def get_block_chain_status(self) -> dict:
         return self._request(queries.GetBlockChainStatus())
-    
+
     def get_asset(self, asset_id: int) -> dict:
         return self._request(queries.GetAsset({"asset": asset_id}))
 
@@ -100,6 +100,4 @@ class BrsApi(BrsApiBase):
         return self._request(queries.GetState())
 
     def get_unconfirmed_transactions(self) -> list:
-        return self._request(queries.GetUnconfirmedTransactions())[
-            "unconfirmedTransactions"
-        ]
+        return self._request(queries.GetUnconfirmedTransactions())["unconfirmedTransactions"]

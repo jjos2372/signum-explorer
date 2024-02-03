@@ -1,16 +1,12 @@
 from django.db.models import (
-    BigAutoField,
     CharField,
     DateTimeField,
     FloatField,
-    IntegerField,
     Model,
     PositiveIntegerField,
     PositiveSmallIntegerField,
 )
 from django.utils.translation import gettext as _
-
-from java_wallet.fields import PositiveBigIntegerField
 
 
 class PeerMonitor(Model):
@@ -49,5 +45,5 @@ class PeerMonitor(Model):
     created_at = DateTimeField(auto_now_add=True)
     modified_at = DateTimeField(auto_now=True)
 
-    reward_state = CharField(max_length=255, blank=True, null=True, default='none')
+    reward_state = CharField(max_length=255, blank=True, null=True, default="none")
     reward_time = DateTimeField(blank=True, null=True)

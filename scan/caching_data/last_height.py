@@ -9,9 +9,4 @@ class CachingLastHeight(CachingDataBase):
     default_data_if_empty = None
 
     def _get_live_data(self):
-        return (
-            Block.objects.using("java_wallet")
-            .order_by("-height")
-            .values_list("height", flat=True)
-            .first()
-        )
+        return Block.objects.using("java_wallet").order_by("-height").values_list("height", flat=True).first()

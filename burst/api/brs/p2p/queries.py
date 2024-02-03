@@ -61,6 +61,7 @@ class GetCumulativeDifficulty(QueryBase):
         "required": ["cumulativeDifficulty", "blockchainHeight"],
     }
 
+
 class GetNextBlockIds(QueryBase):
     _request_type = "getNextBlockIds"
     _required_params = {"blockId"}
@@ -72,6 +73,7 @@ class GetNextBlockIds(QueryBase):
         },
         "required": ["nextBlockIds"],
     }
+
 
 class AddPeers(QueryBase):
     _request_type = "addPeers"

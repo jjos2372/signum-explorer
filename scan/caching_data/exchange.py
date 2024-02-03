@@ -1,12 +1,14 @@
+import logging
+import os
 from dataclasses import dataclass
 
 from django.conf import settings
 from pycoingecko import CoinGeckoAPI
 
 from scan.caching_data.base import CachingDataBase
-import os
-import logging
+
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ExchangeData:
@@ -18,7 +20,7 @@ class ExchangeData:
 
 class CachingExchangeData(CachingDataBase):
     _cache_key = "exchange_data"
-    _cache_expiring = 3600  #SECONDS to hold value if API breaks
+    _cache_expiring = 3600  # SECONDS to hold value if API breaks
     live_if_empty = False
     default_data_if_empty = ExchangeData()
 
@@ -34,7 +36,7 @@ class CachingExchangeData(CachingDataBase):
     def _dumps(self, data):
         return data.__dict__
 
-    def _get_live_data(self):    # Force cache to update unless testnet
+    def _get_live_data(self):  # Force cache to update unless testnet
         if settings.TEST_NET:
             return self.default_data_if_empty
 
@@ -53,5 +55,5 @@ class CachingExchangeData(CachingDataBase):
                 market_cap_usd=response["usd_market_cap"],
                 percent_change_24h=response["usd_24h_change"],
             )
-        except:
+        except Exception:
             return self.default_data_if_empty

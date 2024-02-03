@@ -1,38 +1,35 @@
-from datetime import datetime
-import os
-import simplejson as json
 import sys
-from django.db.models import Q
+from datetime import datetime
+
 from django.http import Http404
 from django.views.generic import ListView
-from config.settings import BLOCKED_ASSETS, PHISHING_ASSETS, FEATURED_ASSETS
 
-from java_wallet.models import AccountAsset, Asset, AssetTransfer, Trade,Transaction
+from config.settings import BLOCKED_ASSETS, FEATURED_ASSETS, PHISHING_ASSETS
+from java_wallet.models import AccountAsset, Asset, AssetTransfer, Trade, Transaction
 from scan.caching_paginator import CachingPaginator
 from scan.helpers.queries import get_account_name, get_asset_details, get_asset_details_owner
 from scan.templatetags.burst_tags import burst_amount, mul_decimals
 from scan.views.base import IntSlugDetailView
 from scan.views.filters.assets import AssetTransferFilter, TradeFilter
 
-  
 
 def fill_data_asset_transfer(transfer):
     try:
-        transfer.name, transfer.decimals, transfer.total_quantity, mintable = get_asset_details(transfer.asset_id) 
-    except:
-        transfer.name, transfer.decimals, transfer.total_quantity = ["NOTKNOWN",1,0]
+        transfer.name, transfer.decimals, transfer.total_quantity, mintable = get_asset_details(transfer.asset_id)
+    except Exception:
+        transfer.name, transfer.decimals, transfer.total_quantity = ["NOTKNOWN", 1, 0]
     transfer.sender_name = get_account_name(transfer.sender_id)
     transfer.recipient_name = get_account_name(transfer.recipient_id)
-    
+
 
 def fill_data_asset_trade(trade):
     trade.name, trade.decimals, trade.total_quantity, mintable = get_asset_details(trade.asset_id)
     trade.buyer_name = get_account_name(trade.buyer_id)
     trade.seller_name = get_account_name(trade.seller_id)
 
+
 def fill_data_asset_distribution(distrib):
     distrib.sender_name = get_account_name(distrib.sender_id)
-
 
 
 class AssetListView(ListView):
@@ -109,9 +106,7 @@ class AssetTransfersListView(ListView):
     filter_set = None
 
     def get_queryset(self):
-        self.filter_set = AssetTransferFilter(
-            self.request.GET, queryset=super().get_queryset()
-        )
+        self.filter_set = AssetTransferFilter(self.request.GET, queryset=super().get_queryset())
         if self.filter_set.is_valid() and self.filter_set.data:
             qs = self.filter_set.qs[:10000]
         else:
@@ -128,6 +123,7 @@ class AssetTransfersListView(ListView):
 
         return context
 
+
 class AssetHoldersListView(ListView):
     model = AccountAsset
     queryset = AccountAsset.objects.using("java_wallet").filter(latest=True)
@@ -139,9 +135,7 @@ class AssetHoldersListView(ListView):
     filter_set = None
 
     def get_queryset(self):
-        self.filter_set = AssetTransferFilter(
-            self.request.GET, queryset=super().get_queryset()
-        )
+        self.filter_set = AssetTransferFilter(self.request.GET, queryset=super().get_queryset())
         if self.filter_set.is_valid() and self.filter_set.data:
             qs = self.filter_set.qs[:10000]
         else:
@@ -160,8 +154,8 @@ class AssetHoldersListView(ListView):
             )
             asset.account_name = get_account_name(asset.account_id)
 
-
         return context
+
 
 class AssetDetailView(IntSlugDetailView):
     model = Asset
@@ -190,34 +184,24 @@ class AssetDetailView(IntSlugDetailView):
             fill_data_asset_transfer(transfer)
 
         context["assets_transfers"] = assets_transfers
-        context["assets_transfers_cnt"] = (
-            AssetTransfer.objects.using("java_wallet").filter(asset_id=obj.id).count()
-        )
+        context["assets_transfers_cnt"] = AssetTransfer.objects.using("java_wallet").filter(asset_id=obj.id).count()
 
         # assets trades
 
         assets_trades = (
-            Trade.objects.using("java_wallet")
-            .using("java_wallet")
-            .filter(asset_id=obj.id)
-            .order_by("-height")[:15]
+            Trade.objects.using("java_wallet").using("java_wallet").filter(asset_id=obj.id).order_by("-height")[:15]
         )
 
         for trade in assets_trades:
             fill_data_asset_trade(trade)
 
         context["assets_trades"] = assets_trades
-        context["assets_trades_cnt"] = (
-            Trade.objects.using("java_wallet").filter(asset_id=obj.id).count()
-        )
+        context["assets_trades_cnt"] = Trade.objects.using("java_wallet").filter(asset_id=obj.id).count()
 
         # asset minting
-        mint_tx  = (
-            Transaction.objects.using("java_wallet")
-            .filter(type=2,subtype =6).order_by("-height")
-        )        
+        mint_tx = Transaction.objects.using("java_wallet").filter(type=2, subtype=6).order_by("-height")
         assets_minting_cnt = 0
-        asset_minting_tx =[]
+        asset_minting_tx = []
         for mints in mint_tx:
             asset_id = int.from_bytes(mints.attachment_bytes[1:9], byteorder=sys.byteorder)
             if asset_id == obj.id:
@@ -228,15 +212,12 @@ class AssetDetailView(IntSlugDetailView):
 
         # asset distributions
         assets_distribution_cnt = 0
-        assets_distribution_tx =[]
-        distribution_tx  = (
-            Transaction.objects.using("java_wallet")
-            .filter(type=2,subtype =8).order_by("-height")
-        )
+        assets_distribution_tx = []
+        distribution_tx = Transaction.objects.using("java_wallet").filter(type=2, subtype=8).order_by("-height")
 
         for distrib_tx in distribution_tx:
             fill_data_asset_distribution(distrib_tx)
-            
+
         for distrib in distribution_tx:
             asset_id = int.from_bytes(distrib.attachment_bytes[1:9], byteorder=sys.byteorder)
             if asset_id == obj.id:
@@ -247,34 +228,24 @@ class AssetDetailView(IntSlugDetailView):
         context["assets_distribution_tx"] = assets_distribution_tx[:15]
 
         # asset holders
-        assets_holders_cnt = (
-            AccountAsset.objects.using("java_wallet")
-            .filter(asset_id=obj.id, latest=True)
-            .count()
-        )
+        assets_holders_cnt = AccountAsset.objects.using("java_wallet").filter(asset_id=obj.id, latest=True).count()
         assets_holders = (
-            AccountAsset.objects.using("java_wallet")
-            .filter(asset_id=obj.id, latest=True)
-            .order_by("-quantity")[:15]
+            AccountAsset.objects.using("java_wallet").filter(asset_id=obj.id, latest=True).order_by("-quantity")[:15]
         )
 
         for asset in assets_holders:
-            asset.name, asset.decimals, asset.total_quantity, asset.mintable, asset.owner_id = get_asset_details_owner(asset.asset_id)
+            asset.name, asset.decimals, asset.total_quantity, asset.mintable, asset.owner_id = get_asset_details_owner(
+                asset.asset_id
+            )
             asset.account_name = get_account_name(asset.account_id)
-
-
 
         context["assets_holders"] = assets_holders
         context["assets_holders_cnt"] = assets_holders_cnt
 
-
         # price history
 
         price_query = (
-            Trade.objects.using("java_wallet")
-            .using("java_wallet")
-            .filter(asset_id=obj.id)
-            .order_by("-height")[:2000]
+            Trade.objects.using("java_wallet").using("java_wallet").filter(asset_id=obj.id).order_by("-height")[:2000]
         )
 
         price_history = "["
@@ -289,7 +260,7 @@ class AssetDetailView(IntSlugDetailView):
                 # one per day
                 price_history += "[" + time + "000," + str(price) + "],"
                 old_time = time
-        
+
         # add now as latest price
         if last_price:
             price_history += "[" + now + "000," + str(price) + "],"
@@ -299,6 +270,7 @@ class AssetDetailView(IntSlugDetailView):
         context["price_history"] = price_history
 
         return context
+
 
 class AssetMintingDetailView(ListView):
     model = Asset
@@ -312,12 +284,11 @@ class AssetMintingDetailView(ListView):
     ordering = "-height"
     filter_set = None
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        focus =  Asset.objects.using("java_wallet").filter(id=self.request.GET['asset'])
+        focus = Asset.objects.using("java_wallet").filter(id=self.request.GET["asset"])
         for asset_focus in focus:
-            obj=asset_focus
+            obj = asset_focus
         name, decimals, total_quantity, mintable = get_asset_details(obj.id)
         # assets transfer
 
@@ -332,34 +303,28 @@ class AssetMintingDetailView(ListView):
             fill_data_asset_transfer(transfer)
 
         context["assets_transfers"] = assets_transfers
-        context["assets_transfers_cnt"] = (
-            AssetTransfer.objects.using("java_wallet").filter(asset_id=obj.id).count()
-        )
+        context["assets_transfers_cnt"] = AssetTransfer.objects.using("java_wallet").filter(asset_id=obj.id).count()
 
         # assets trades
 
         assets_trades = (
-            Trade.objects.using("java_wallet")
-            .using("java_wallet")
-            .filter(asset_id=obj.id)
-            .order_by("-height")[:15]
+            Trade.objects.using("java_wallet").using("java_wallet").filter(asset_id=obj.id).order_by("-height")[:15]
         )
 
         for trade in assets_trades:
             fill_data_asset_trade(trade)
 
         context["assets_trades"] = assets_trades
-        context["assets_trades_cnt"] = (
-            Trade.objects.using("java_wallet").filter(asset_id=obj.id).count()
-        )
+        context["assets_trades_cnt"] = Trade.objects.using("java_wallet").filter(asset_id=obj.id).count()
 
         # asset minting
-        mint_tx  = (
+        mint_tx = (
             Transaction.objects.using("java_wallet")
-            .filter(type=2,subtype =6,sender_id=obj.account_id).order_by("-height")
+            .filter(type=2, subtype=6, sender_id=obj.account_id)
+            .order_by("-height")
         )
         assets_minting_cnt = 0
-        asset_minting_tx =[]
+        asset_minting_tx = []
         for mints in mint_tx:
             asset_id = int.from_bytes(mints.attachment_bytes[1:9], byteorder=sys.byteorder)
             if asset_id == obj.id:
@@ -369,6 +334,7 @@ class AssetMintingDetailView(ListView):
         context["assets_minting_tx"] = asset_minting_tx
 
         return context
+
 
 class AssetDistributionDetailView(ListView):
     model = Asset
@@ -380,21 +346,17 @@ class AssetDistributionDetailView(ListView):
     ordering = "-height"
     filter_set = None
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        focus =  Asset.objects.using("java_wallet").filter(id=self.request.GET['asset'])
+        focus = Asset.objects.using("java_wallet").filter(id=self.request.GET["asset"])
         for asset_focus in focus:
-            obj=asset_focus
+            obj = asset_focus
         name, decimals, total_quantity, mintable = get_asset_details(obj.id)
 
         # asset distributions
         assets_distribution_cnt = 0
-        assets_distribution_tx =[]
-        distribution_tx  = (
-            Transaction.objects.using("java_wallet")
-            .filter(type=2,subtype=8).order_by("-height")
-        )
+        assets_distribution_tx = []
+        distribution_tx = Transaction.objects.using("java_wallet").filter(type=2, subtype=8).order_by("-height")
 
         for distrib_tx in distribution_tx:
             fill_data_asset_distribution(distrib_tx)
@@ -409,4 +371,3 @@ class AssetDistributionDetailView(ListView):
         context["assets_distribution_tx"] = assets_distribution_tx
 
         return context
-

@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from distutils.version import LooseVersion
 from functools import lru_cache
-from urllib.parse import urlparse
 from time import sleep
+from urllib.parse import urlparse
 
 import requests
 from cache_memoize import cache_memoize
@@ -22,7 +22,6 @@ from burst.api.brs.p2p import P2PApi
 from burst.api.exceptions import BurstException
 from config.settings import PEERS_SCAN_DELAY
 from java_wallet.models import Block
-from scan.helpers.decorators import lock_decorator
 from scan.models import PeerMonitor
 
 logger = logging.getLogger(__name__)
@@ -30,6 +29,7 @@ logger = logging.getLogger(__name__)
 if PEERS_SCAN_DELAY > 0:
     logger.info(f"Peers sleeping for {PEERS_SCAN_DELAY} seconds...")
 sleep(PEERS_SCAN_DELAY)
+
 
 def get_ip_by_domain(peer: str) -> str or None:
     # truncating port if exists
@@ -68,7 +68,21 @@ def get_country_by_ip(ip: str) -> str:
 class PeerMonitorForm(forms.ModelForm):
     class Meta:
         model = PeerMonitor
-        fields = ['announced_address', 'real_ip', 'platform', 'application', 'version', 'height', 'cumulative_difficulty', 'country_code', 'state', 'downtime', 'lifetime', 'availability', 'last_online_at']
+        fields = [
+            "announced_address",
+            "real_ip",
+            "platform",
+            "application",
+            "version",
+            "height",
+            "cumulative_difficulty",
+            "country_code",
+            "state",
+            "downtime",
+            "lifetime",
+            "availability",
+            "last_online_at",
+        ]
 
 
 def is_good_version(version: str) -> bool:
@@ -85,15 +99,11 @@ def is_good_version(version: str) -> bool:
 
 def get_local_difficulty() -> dict:
     latest_blocks = (
-        Block.objects.using("java_wallet")
-        .order_by("-height")
-        .values("height", "cumulative_difficulty", "id")[:3]
+        Block.objects.using("java_wallet").order_by("-height").values("height", "cumulative_difficulty", "id")[:3]
     )
     result = latest_blocks[1]
 
-    result["cumulative_difficulty"] = str(
-        int(result["cumulative_difficulty"].hex(), 16)
-    )
+    result["cumulative_difficulty"] = str(int(result["cumulative_difficulty"].hex(), 16))
     result["previous_block_id"] = latest_blocks[2]["id"]
 
     return result
@@ -102,10 +112,7 @@ def get_local_difficulty() -> dict:
 @lru_cache(maxsize=None)
 def get_block_cumulative_difficulty(height: int) -> str:
     cumulative_difficulty = (
-        Block.objects.using("java_wallet")
-        .filter(height=height)
-        .values_list("cumulative_difficulty", flat=True)
-        .first()
+        Block.objects.using("java_wallet").filter(height=height).values_list("cumulative_difficulty", flat=True).first()
     )
     return str(int(cumulative_difficulty.hex(), 16))
 
@@ -123,18 +130,18 @@ def explore_peer(local_difficulty: dict, address: str, updates: dict):
             logger.debug("Old version: %s", peer_info["version"])
             updates[address] = None
             return
-        if not "announcedAddress" in peer_info:
+        if "announcedAddress" not in peer_info:
             peer_info["announcedAddress"] = address
 
         default_port = ":" + str(settings.DEFAULT_P2P_PORT)
-        peer_info["announcedAddress"] = peer_info["announcedAddress"].replace(default_port,"")
+        peer_info["announcedAddress"] = peer_info["announcedAddress"].replace(default_port, "")
         peer_info.update(p2p_api.get_cumulative_difficulty())
         peer_info["next_block_ids"] = []
         try:
             peer_info["next_block_ids"] = p2p_api.get_next_block_ids(local_difficulty["previous_block_id"])
-        except:
+        except Exception:
             logger.debug("Could not get next block ids for " + p2p_api.node_url)
-    except BurstException as ex:
+    except BurstException:
         logger.debug("Can't connect to peer: %s", p2p_api.node_url)
         updates[address] = None
         return
@@ -237,11 +244,14 @@ def peer_cmd():
     logger.info("Start the scan")
 
     local_difficulty = get_local_difficulty()
-    logger.info(f"Checking for height: {local_difficulty['height']}, id: {local_difficulty['id']}, prev id: {local_difficulty['previous_block_id']}")
+    logger.info(
+        f"Checking for height: {local_difficulty['height']}, id: {local_difficulty['id']}, "
+        f"prev id: {local_difficulty['previous_block_id']}"
+    )
 
     addresses = get_nodes_list()
-    #logger.info("The list of peers:") #enable to troubleshoot peers list
-    #logger.info(addresses)            #enable to troubleshoot peers list
+    # logger.info("The list of peers:") #enable to troubleshoot peers list
+    # logger.info(addresses)            #enable to troubleshoot peers list
     # explore every peer and collect updates
     updates = {}
     if settings.TEST_NET:
@@ -253,9 +263,7 @@ def peer_cmd():
     updates_with_data = tuple(filter(lambda x: x is not None, updates.values()))
     # if more than __% peers were gone offline in __min, probably network problem
     if len(updates_with_data) < get_count_nodes_online() * 0.8:
-        logger.warning(
-            "Peers update was rejected: %d - %d", len(updates_with_data), len(addresses)
-        )
+        logger.warning("Peers update was rejected: %d - %d", len(updates_with_data), len(addresses))
         return
 
     # set all peers unreachable, if will no update - peer will be unreachable
@@ -265,9 +273,7 @@ def peer_cmd():
     for update in updates_with_data:
         logger.debug("Update: %r", update)
 
-        peer_obj = PeerMonitor.objects.filter(
-            announced_address=update["announced_address"]
-        ).first()
+        peer_obj = PeerMonitor.objects.filter(announced_address=update["announced_address"]).first()
         if not peer_obj:
             logger.info("Found new peer: %s", update["announced_address"])
 
@@ -287,9 +293,7 @@ def peer_cmd():
     ).update(downtime=F("downtime") + 1)
 
     PeerMonitor.objects.annotate(
-        duration=ExpressionWrapper(
-            Now() - F("last_online_at"), output_field=DurationField()
-        )
+        duration=ExpressionWrapper(Now() - F("last_online_at"), output_field=DurationField())
     ).filter(duration__gte=timedelta(days=5)).delete()
 
     PeerMonitor.objects.update(

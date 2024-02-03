@@ -1,5 +1,5 @@
 import logging
-from ctypes import c_ulonglong, c_longlong
+from ctypes import c_longlong, c_ulonglong
 from datetime import datetime
 
 from django.db.models import BigIntegerField, DateTimeField

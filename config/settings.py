@@ -25,9 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "changeme"
-)
+SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "off") == "on"
@@ -42,7 +40,7 @@ AUTH_USER_MODEL = "cabinet.User"
 
 # Application definition
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -88,7 +86,8 @@ if DEBUG:
     MIDDLEWARE += ["django_cprofile_middleware.middleware.ProfilerMiddleware"]
     DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
 
-    from django_query_profiler.settings import *
+    from django_query_profiler.settings import *  # noqa
+
     MIDDLEWARE += ["django_query_profiler.client.middleware.QueryProfilerMiddleware"]
 
 ROOT_URLCONF = "config.urls"
@@ -142,9 +141,7 @@ DATABASE_ROUTERS = ["java_wallet.db_router.DBRouter", "scan.db_router.DBRouter"]
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -222,16 +219,16 @@ LOGGING = {
 
 # Celery
 #
-#CELERY_BROKER_URL = (
+# CELERY_BROKER_URL = (
 #    f'redis://{os.environ.get("CELERY_BROKER_HOST")}:'
 #    f'{os.environ.get("CELERY_BROKER_PORT")}/'
 #    f'{os.environ.get("CELERY_BROKER_DB")}'
-#)
-#CELERY_RESULT_BACKEND = None
-#CELERY_ACCEPT_CONTENT = ["json"]
-#CELERY_TASK_SERIALIZER = "json"
-#CELERY_RESULT_SERIALIZER = "json"
-#CELERYD_TASK_TIME_LIMIT = 600
+# )
+# CELERY_RESULT_BACKEND = None
+# CELERY_ACCEPT_CONTENT = ["json"]
+# CELERY_TASK_SERIALIZER = "json"
+# CELERY_RESULT_SERIALIZER = "json"
+# CELERYD_TASK_TIME_LIMIT = 600
 
 # Sentry
 
@@ -239,7 +236,8 @@ SENTRY_DSN = os.environ.get("SENTRY_DSN")
 
 if SENTRY_DSN:
     from sentry_sdk import init
-#    from sentry_sdk.integrations.celery import CeleryIntegration
+
+    # from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
     from sentry_sdk.integrations.redis import RedisIntegration
@@ -248,7 +246,7 @@ if SENTRY_DSN:
         dsn=SENTRY_DSN,
         integrations=[
             DjangoIntegration(),
-#            CeleryIntegration(),
+            # CeleryIntegration(),
             LoggingIntegration(event_level=logging.WARNING),
             RedisIntegration(),
         ],

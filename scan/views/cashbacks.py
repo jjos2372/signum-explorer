@@ -1,15 +1,10 @@
-import gzip
 from django.views.generic import ListView
-
-from java_wallet.models import Transaction
-from scan.caching_paginator import CachingPaginator
-from scan.helpers.queries import get_account_name
-from scan.views.base import IntSlugDetailView
 
 from burst.libs.multiout import MultiOutPack
 from java_wallet.models import Transaction
 from scan.caching_paginator import CachingPaginator
 from scan.helpers.queries import get_account_name
+from scan.views.ats import fill_at_data
 from scan.views.base import IntSlugDetailView
 
 
@@ -36,8 +31,8 @@ class CBListView(ListView):
 
     def get_queryset(self):
         qs = self.queryset
-        if 'a' in self.request.GET:
-            qs = qs.filter(cash_back_id=self.request.GET['a'])
+        if "a" in self.request.GET:
+            qs = qs.filter(cash_back_id=self.request.GET["a"])
 
         return qs.order_by(self.ordering)
 

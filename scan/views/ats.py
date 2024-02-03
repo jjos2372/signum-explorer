@@ -1,4 +1,5 @@
 import gzip
+
 from django.views.generic import ListView
 
 from java_wallet.models import At
@@ -28,10 +29,9 @@ class AtListView(ListView):
 
     def get_queryset(self):
         qs = self.queryset
-        if 'a' in self.request.GET:
-            qs = qs.filter(creator_id=self.request.GET['a'])
+        if "a" in self.request.GET:
+            qs = qs.filter(creator_id=self.request.GET["a"])
         return qs.order_by(self.ordering)
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

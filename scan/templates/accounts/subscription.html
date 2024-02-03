@@ -21,7 +21,7 @@
         <td><a href="{% url 'tx-detail' subscription.id %}">{{ subscription.id|truncatechars:10 }}</a></td>
         <td class="d-none d-sm-table-cell"><a href="{% url 'block-detail' subscription.height %}">{{ subscription.height }}</a></td>
         <td class="d-none d-sm-table-cell">{{ subscription.frequency|sec_time }}</td>
-        <td>{{ subscription.time_next|subNextsend|naturaltime }}</td>
+        <td>{{ subscription.time_next|sub_next_send|naturaltime }}</td>
         <td class="d-none d-sm-table-cell">{% include "account_link.html" with account_id=subscription.sender_id account_name=subscription.sender_id|account_name_string  %}</td>
         <td>{% include "account_link.html" with account_id=subscription.id|subscription_recipient_aliascheck account_name=subscription.id|subscription_recipient_aliascheck|account_name_string  %}</td>
         <td>{{ subscription.amount|burst_amount }}<br>

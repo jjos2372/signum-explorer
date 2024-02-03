@@ -2,10 +2,10 @@ from django.db.models import Count
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, ListView
-from config.settings import BRS_BOOTSTRAP_PEERS, AUTO_BOOTSTRAP_PEERS
-from django.http import HttpResponse
+
+from config.settings import AUTO_BOOTSTRAP_PEERS, BRS_BOOTSTRAP_PEERS
 from scan.models import PeerMonitor
-import json
+
 
 @require_http_methods(["GET"])
 def peers_charts_view(request):
@@ -16,14 +16,15 @@ def peers_charts_view(request):
         .annotate(cnt=Count("version"))
         .order_by("-version", "-cnt")
     )
-    
+
     votes = (
-        PeerMonitor.objects.filter(state=PeerMonitor.State.ONLINE).exclude(reward_state='Duplicate')
+        PeerMonitor.objects.filter(state=PeerMonitor.State.ONLINE)
+        .exclude(reward_state="Duplicate")
         .values("platform")
         .annotate(cnt=Count("platform"))
         .order_by("-cnt")
     )
-        
+
     countries = (
         PeerMonitor.objects.filter(state=PeerMonitor.State.ONLINE)
         .values("country_code")
@@ -31,17 +32,11 @@ def peers_charts_view(request):
         .order_by("-cnt", "country_code")
     )
 
-    states = (
-        PeerMonitor.objects.values("state")
-        .annotate(cnt=Count("state"))
-        .order_by("-cnt", "state")
-    )
+    states = PeerMonitor.objects.values("state").annotate(cnt=Count("state")).order_by("-cnt", "state")
     for state in states:
         state["state"] = PeerMonitor(state=state["state"]).get_state_display()
 
-    last_check = (
-        PeerMonitor.objects.values("modified_at").order_by("-modified_at").first()
-    )
+    last_check = PeerMonitor.objects.values("modified_at").order_by("-modified_at").first()
 
     return render(
         request,
@@ -72,8 +67,7 @@ class PeerMonitorListView(ListView):
         bootstrap_peers = BRS_BOOTSTRAP_PEERS
         if AUTO_BOOTSTRAP_PEERS:
             auto_bootstrap_peers = (
-                PeerMonitor.objects
-                .filter(announced_address__contains='.signum.network')
+                PeerMonitor.objects.filter(announced_address__contains=".signum.network")
                 .exclude(state__gt=1)
                 .values_list(flat=True)
             )
@@ -82,11 +76,10 @@ class PeerMonitorListView(ListView):
             combine_bootstrap_peers = auto_peers + brs_peers
             bootstrap_peers = list(set(combine_bootstrap_peers))
         for peer in bootstrap_peers:
-            featured_peer = (PeerMonitor.objects.filter(announced_address=peer)
-                .order_by("-availability").first())
+            featured_peer = PeerMonitor.objects.filter(announced_address=peer).order_by("-availability").first()
             if featured_peer:
                 featured_peers.append(featured_peer)
-        
+
         context["featured_peers"] = featured_peers
 
         return context
@@ -104,14 +97,16 @@ class PeerMonitorDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         obj = context[self.context_object_name]
 
-        if obj.state == 3 or obj.state == 4: # 4 could be removed if we only want sync
+        if obj.state == 3 or obj.state == 4:  # 4 could be removed if we only want sync
             featured_peers = []
             for peer in BRS_BOOTSTRAP_PEERS:
-                featured_peer = PeerMonitor.objects.filter(announced_address=peer).exclude(state__gt=1).values("height").first()
+                featured_peer = (
+                    PeerMonitor.objects.filter(announced_address=peer).exclude(state__gt=1).values("height").first()
+                )
                 if featured_peer:
                     featured_peers.append(featured_peer["height"])
 
-            context["concensus"] = round(sum(featured_peers)/len(featured_peers))
+            context["concensus"] = round(sum(featured_peers) / len(featured_peers))
             context["progress"] = str(round((obj.height / context["concensus"]) * 100, 2))
 
         return context

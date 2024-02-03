@@ -24,71 +24,33 @@ TX_TYPES = {
     (TxType.MESSAGING, TxSubtypeMessaging.TLD_ASSIGNMENT): _("STLD Assignment"),
     (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_ISSUANCE): _("Token Issuance"),
     (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_TRANSFER): _("Token Transfer"),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASK_ORDER_PLACEMENT): _(
-        "Ask Order Placement"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.BID_ORDER_PLACEMENT): _(
-        "Bid Order Placement"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASK_ORDER_CANCELLATION): _(
-        "Ask Order Cancellation"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.BID_ORDER_CANCELLATION): _(
-        "Bid Order Cancellation"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_MINT): _(
-        "Token Mint"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ADD_TREASURY_ACCOUNT): _(
-        "Add Treasury Account"
-    ),
-    (TxType.COLORED_COINS, TxSubtypeColoredCoins.DISTRIBUTE_TO_HOLDERS): _(
-        "Distribute to Holders"
-    ),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASK_ORDER_PLACEMENT): _("Ask Order Placement"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.BID_ORDER_PLACEMENT): _("Bid Order Placement"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASK_ORDER_CANCELLATION): _("Ask Order Cancellation"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.BID_ORDER_CANCELLATION): _("Bid Order Cancellation"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_MINT): _("Token Mint"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.ADD_TREASURY_ACCOUNT): _("Add Treasury Account"),
+    (TxType.COLORED_COINS, TxSubtypeColoredCoins.DISTRIBUTE_TO_HOLDERS): _("Distribute to Holders"),
     (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_TRANSFER_MULTI): _("Token Multi Transfer"),
     (TxType.COLORED_COINS, TxSubtypeColoredCoins.ASSET_TRANSFER_OWNERSHIP): _("Token Ownership Transfer"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.LISTING): _("Marketplace Listing"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.DELISTING): _("Marketplace Removal"),
-    (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.PRICE_CHANGE): _(
-        "Marketplace Price Change"
-    ),
+    (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.PRICE_CHANGE): _("Marketplace Price Change"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.QUANTITY_CHANGE): _("Quantity Change"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.PURCHASE): _("Marketplace Purchase"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.DELIVERY): _("Marketplace Delivery"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.FEEDBACK): _("Marketplace Feedback"),
     (TxType.DIGITAL_GOODS, TxSubtypeDigitalGoods.REFUND): _("Marketplace Refund"),
-    (TxType.ACCOUNT_CONTROL, TxSubtypeAccountControl.EFFECTIVE_BALANCE_LEASING): _(
-        "Balance Leasing"
-    ),
-    (TxType.BURST_MINING, TxSubtypeBurstMining.REWARD_RECIPIENT_ASSIGNMENT): _(
-        "Reward Recipient Assignment"
-    ),
-    (TxType.BURST_MINING, TxSubtypeBurstMining.COMMITMENT_ADD): _(
-        "Add Commitment"
-    ),
-    (TxType.BURST_MINING, TxSubtypeBurstMining.COMMITMENT_REMOVE): _(
-        "Remove Commitment"
-    ),
-    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.ESCROW_CREATION): _(
-        "Escrow Creation"
-    ),
+    (TxType.ACCOUNT_CONTROL, TxSubtypeAccountControl.EFFECTIVE_BALANCE_LEASING): _("Balance Leasing"),
+    (TxType.BURST_MINING, TxSubtypeBurstMining.REWARD_RECIPIENT_ASSIGNMENT): _("Reward Recipient Assignment"),
+    (TxType.BURST_MINING, TxSubtypeBurstMining.COMMITMENT_ADD): _("Add Commitment"),
+    (TxType.BURST_MINING, TxSubtypeBurstMining.COMMITMENT_REMOVE): _("Remove Commitment"),
+    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.ESCROW_CREATION): _("Escrow Creation"),
     (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.ESCROW_SIGN): _("Escrow Sign"),
-    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.ESCROW_RESULT): _(
-        "Escrow Result"
-    ),
-    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_SUBSCRIBE): _(
-        "Auto-Payment Subscribe"
-    ),
-    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_CANCEL): _(
-        "Auto-Payment Cancel"
-    ),
-    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_PAYMENT): _(
-        "Auto-Payment"
-    ),
-    (TxType.AUTOMATED_TRANSACTIONS, TxSubtypeAutomatedTransactions.CREATION): _(
-        "Deploy Contract"
-    ),
-    (TxType.AUTOMATED_TRANSACTIONS, TxSubtypeAutomatedTransactions.PAYMENT): _(
-        "Contract Payment"
-    ),
+    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.ESCROW_RESULT): _("Escrow Result"),
+    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_SUBSCRIBE): _("Auto-Payment Subscribe"),
+    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_CANCEL): _("Auto-Payment Cancel"),
+    (TxType.ADVANCED_PAYMENT, TxSubtypeAdvancedPayment.SUBSCRIPTION_PAYMENT): _("Auto-Payment"),
+    (TxType.AUTOMATED_TRANSACTIONS, TxSubtypeAutomatedTransactions.CREATION): _("Deploy Contract"),
+    (TxType.AUTOMATED_TRANSACTIONS, TxSubtypeAutomatedTransactions.PAYMENT): _("Contract Payment"),
 }

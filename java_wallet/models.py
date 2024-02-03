@@ -6,10 +6,10 @@
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 import os
-from django.db import models
-from requests import delete
-from .fields import PositiveBigIntegerField, TimestampField
 
+from django.db import models
+
+from .fields import PositiveBigIntegerField, TimestampField
 
 
 class Account(models.Model):
@@ -22,10 +22,12 @@ class Account(models.Model):
     description = models.TextField(blank=True, null=True)
     height = models.IntegerField()
     latest = models.IntegerField()
+
     class Meta:
         managed = True
-        db_table = 'account'
-        unique_together = (('id', 'height'),)
+        db_table = "account"
+        unique_together = (("id", "height"),)
+
 
 class AccountBalance(models.Model):
     db_id = models.BigAutoField(primary_key=True)
@@ -35,10 +37,12 @@ class AccountBalance(models.Model):
     forged_balance = PositiveBigIntegerField()
     height = models.IntegerField()
     latest = models.IntegerField()
+
     class Meta:
         managed = True
-        db_table = 'account_balance'
-        unique_together = (('id', 'height'),)
+        db_table = "account_balance"
+        unique_together = (("id", "height"),)
+
 
 class AccountAsset(models.Model):
     db_id = models.BigAutoField(primary_key=True)
@@ -51,8 +55,8 @@ class AccountAsset(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'account_asset'
-        unique_together = (('account_id', 'asset_id', 'height'),)
+        db_table = "account_asset"
+        unique_together = (("account_id", "asset_id", "height"),)
 
 
 class Alias(models.Model):
@@ -69,8 +73,8 @@ class Alias(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'alias'
-        unique_together = (('id', 'height'),)
+        db_table = "alias"
+        unique_together = (("id", "height"),)
 
 
 class AliasOffer(models.Model):
@@ -83,8 +87,8 @@ class AliasOffer(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'alias_offer'
-        unique_together = (('id', 'height'),)
+        db_table = "alias_offer"
+        unique_together = (("id", "height"),)
 
 
 class AskOrder(models.Model):
@@ -100,8 +104,8 @@ class AskOrder(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'ask_order'
-        unique_together = (('id', 'height'),)
+        db_table = "ask_order"
+        unique_together = (("id", "height"),)
 
 
 class Asset(models.Model):
@@ -117,7 +121,7 @@ class Asset(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'asset'
+        db_table = "asset"
 
 
 class AssetTransfer(models.Model):
@@ -132,7 +136,7 @@ class AssetTransfer(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'asset_transfer'
+        db_table = "asset_transfer"
 
 
 class At(models.Model):
@@ -154,8 +158,8 @@ class At(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'at'
-        unique_together = (('id', 'height'),)
+        db_table = "at"
+        unique_together = (("id", "height"),)
 
 
 class AtState(models.Model):
@@ -173,8 +177,8 @@ class AtState(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'at_state'
-        unique_together = (('at_id', 'height'),)
+        db_table = "at_state"
+        unique_together = (("at_id", "height"),)
 
 
 class BidOrder(models.Model):
@@ -190,8 +194,8 @@ class BidOrder(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'bid_order'
-        unique_together = (('id', 'height'),)
+        db_table = "bid_order"
+        unique_together = (("id", "height"),)
 
 
 class Block(models.Model):
@@ -199,7 +203,9 @@ class Block(models.Model):
     id = PositiveBigIntegerField(unique=True)
     version = models.IntegerField()
     timestamp = TimestampField(unique=True)
-    previous_block = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, related_name='previous_block_r', to_field='id')
+    previous_block = models.ForeignKey(
+        "self", models.DO_NOTHING, blank=True, null=True, related_name="previous_block_r", to_field="id"
+    )
     total_amount = PositiveBigIntegerField()
     total_fee = PositiveBigIntegerField()
     payload_length = models.IntegerField()
@@ -207,7 +213,9 @@ class Block(models.Model):
     previous_block_hash = models.CharField(max_length=32, blank=True, null=True)
     cumulative_difficulty = models.TextField()
     base_target = PositiveBigIntegerField()
-    next_block = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, related_name='next_block_r', to_field='id')
+    next_block = models.ForeignKey(
+        "self", models.DO_NOTHING, blank=True, null=True, related_name="next_block_r", to_field="id"
+    )
     height = models.IntegerField(unique=True)
     generation_signature = models.BinaryField(max_length=64)
     block_signature = models.CharField(max_length=64)
@@ -215,13 +223,13 @@ class Block(models.Model):
     generator_id = PositiveBigIntegerField()
     nonce = PositiveBigIntegerField()
     ats = models.TextField(blank=True, null=True)
-    version = os.environ.get('BRS_P2P_VERSION')
+    version = os.environ.get("BRS_P2P_VERSION")
     total_fee_cash_back = PositiveBigIntegerField(blank=True, null=True)
-    total_fee_burnt= PositiveBigIntegerField(blank=True, null=True)
-    
+    total_fee_burnt = PositiveBigIntegerField(blank=True, null=True)
+
     class Meta:
         managed = True
-        db_table = 'block'
+        db_table = "block"
 
 
 class Escrow(models.Model):
@@ -238,8 +246,8 @@ class Escrow(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'escrow'
-        unique_together = (('id', 'height'),)
+        db_table = "escrow"
+        unique_together = (("id", "height"),)
 
 
 class EscrowDecision(models.Model):
@@ -252,8 +260,8 @@ class EscrowDecision(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'escrow_decision'
-        unique_together = (('escrow_id', 'account_id', 'height'),)
+        db_table = "escrow_decision"
+        unique_together = (("escrow_id", "account_id", "height"),)
 
 
 class Goods(models.Model):
@@ -272,8 +280,8 @@ class Goods(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'goods'
-        unique_together = (('id', 'height'),)
+        db_table = "goods"
+        unique_together = (("id", "height"),)
 
 
 class Peer(models.Model):
@@ -281,7 +289,7 @@ class Peer(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'peer'
+        db_table = "peer"
 
 
 class Purchase(models.Model):
@@ -310,8 +318,8 @@ class Purchase(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'purchase'
-        unique_together = (('id', 'height'),)
+        db_table = "purchase"
+        unique_together = (("id", "height"),)
 
 
 class PurchaseFeedback(models.Model):
@@ -324,7 +332,7 @@ class PurchaseFeedback(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'purchase_feedback'
+        db_table = "purchase_feedback"
 
 
 class PurchasePublicFeedback(models.Model):
@@ -336,7 +344,7 @@ class PurchasePublicFeedback(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'purchase_public_feedback'
+        db_table = "purchase_public_feedback"
 
 
 class RewardRecipAssign(models.Model):
@@ -350,8 +358,8 @@ class RewardRecipAssign(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'reward_recip_assign'
-        unique_together = (('account_id', 'height'),)
+        db_table = "reward_recip_assign"
+        unique_together = (("account_id", "height"),)
 
 
 class Subscription(models.Model):
@@ -367,8 +375,8 @@ class Subscription(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'subscription'
-        unique_together = (('id', 'height'),)
+        db_table = "subscription"
+        unique_together = (("id", "height"),)
 
 
 class Trade(models.Model):
@@ -388,13 +396,15 @@ class Trade(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'trade'
-        unique_together = (('ask_order_id', 'bid_order_id'),)
+        db_table = "trade"
+        unique_together = (("ask_order_id", "bid_order_id"),)
+
 
 class IndirectRecipient:
     amount = None
     id = None
     asset_id = None
+
 
 class Transaction(models.Model):
     db_id = models.BigAutoField(primary_key=True)
@@ -405,7 +415,7 @@ class Transaction(models.Model):
     amount = PositiveBigIntegerField()
     fee = PositiveBigIntegerField()
     height = models.IntegerField()
-    block = models.ForeignKey(Block, models.DO_NOTHING, to_field='id')
+    block = models.ForeignKey(Block, models.DO_NOTHING, to_field="id")
     signature = models.CharField(max_length=64, blank=True, null=True)
     timestamp = TimestampField()
     type = models.IntegerField()
@@ -423,12 +433,13 @@ class Transaction(models.Model):
     ec_block_id = PositiveBigIntegerField(blank=True, null=True)
     has_encrypttoself_message = models.IntegerField()
     recipients = None
-    versionBRS = os.environ.get('BRS_P2P_VERSION')
-    cash_back_id= PositiveBigIntegerField(blank=True, null=True)
-     
+    versionBRS = os.environ.get("BRS_P2P_VERSION")  # noqa
+    cash_back_id = PositiveBigIntegerField(blank=True, null=True)
+
     class Meta:
         managed = True
-        db_table = 'transaction'
+        db_table = "transaction"
+
 
 class IndirectIncoming(models.Model):
     db_id = models.BigAutoField(primary_key=True)
@@ -440,7 +451,8 @@ class IndirectIncoming(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'indirect_incoming'
+        db_table = "indirect_incoming"
+
 
 class UnconfirmedTransaction(models.Model):
     db_id = models.BigAutoField(primary_key=True)
@@ -454,7 +466,7 @@ class UnconfirmedTransaction(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'unconfirmed_transaction'
+        db_table = "unconfirmed_transaction"
 
 
 class Version(models.Model):
@@ -462,4 +474,4 @@ class Version(models.Model):
 
     class Meta:
         managed = True
-        db_table = 'version'
+        db_table = "version"

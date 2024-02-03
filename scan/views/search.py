@@ -1,18 +1,17 @@
+import os
+
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from burst.libs.reed_solomon import ReedSolomon, ReedSolomonError
 from java_wallet import models
-from scan.models import PeerMonitor
-
-import os
 
 SEARCH_BY = [
     ("Block", "height", "/block/{}"),
     ("At", "id", "/at/{}"),
     ("Asset", "id", "/asset/{}"),
     ("Account", "id", "/address/{}"),
-#    ("Goods", "id", "/mp/{}"),
+    #    ("Goods", "id", "/mp/{}"),
     ("Transaction", "id", "/tx/{}"),
 ]
 
@@ -32,12 +31,7 @@ def search_view(request):
         query = int(query)
 
         for x in SEARCH_BY:
-            exists = (
-                getattr(models, x[0])
-                .objects.using("java_wallet")
-                .filter(**{x[1]: query})
-                .exists()
-            )
+            exists = getattr(models, x[0]).objects.using("java_wallet").filter(**{x[1]: query}).exists()
 
             if exists:
                 redirect_url = x[2].format(query)
@@ -46,32 +40,21 @@ def search_view(request):
     elif len(query) in REED_SOLOMON_LENS or query.find(os.environ.get("ADDRESS_PREFIX")) == 0:
         try:
             if query.find(os.environ.get("ADDRESS_PREFIX")) == 0:
-                query = query[len(os.environ.get("ADDRESS_PREFIX")):]
+                query = query[len(os.environ.get("ADDRESS_PREFIX")) :]
             numeric_id = ReedSolomon().decode(query)
-            exists = (
-                models.At.objects.using("java_wallet")
-                .filter(id=numeric_id)
-                .exists()
-            )
+            exists = models.At.objects.using("java_wallet").filter(id=numeric_id).exists()
             if exists:
                 redirect_url = f"/at/{numeric_id}"
             else:
-                exists = (
-                    models.Account.objects.using("java_wallet")
-                    .filter(id=numeric_id)
-                    .exists()
-                )
+                exists = models.Account.objects.using("java_wallet").filter(id=numeric_id).exists()
                 if exists:
                     redirect_url = f"/address/{numeric_id}"
-            
+
         except ReedSolomonError:
             pass
 
     else:
-        account_exists = (
-                    models.Account.objects.using("java_wallet")
-                    .filter(name=query).exists()
-                )
+        account_exists = models.Account.objects.using("java_wallet").filter(name=query).exists()
         if account_exists:
             account_id = (
                 models.Account.objects.using("java_wallet")

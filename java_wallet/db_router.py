@@ -13,10 +13,7 @@ class DBRouter:
 
     @staticmethod
     def allow_relation(obj1, obj2, **hints):
-        if (
-            obj1._meta.app_label == "java_wallet"
-            or obj2._meta.app_label == "java_wallet"
-        ):
+        if obj1._meta.app_label == "java_wallet" or obj2._meta.app_label == "java_wallet":
             return True
         return None
 

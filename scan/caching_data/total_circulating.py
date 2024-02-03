@@ -1,6 +1,8 @@
+from django.db.models import Sum
+
 from java_wallet.models import AccountBalance
 from scan.caching_data.base import CachingDataBase
-from django.db.models import Sum
+
 
 class CachingTotalCirculating(CachingDataBase):
     _cache_key = "total_circulating"
@@ -13,5 +15,5 @@ class CachingTotalCirculating(CachingDataBase):
             AccountBalance.objects.using("java_wallet")
             .filter(balance__gt=0, latest=True)
             .exclude(id=0)
-            .aggregate(Sum("balance"))["balance__sum"] 
-        )  
+            .aggregate(Sum("balance"))["balance__sum"]
+        )

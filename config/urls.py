@@ -18,18 +18,10 @@ from scan.views.cashbacks import CBListView
 from scan.views.distribution import DistributionListView
 from scan.views.forged_blocks import ForgedBlocksListView
 from scan.views.index import index
-from scan.views.json import TopAccountsJson, getSNRjson, getStatejson
-from scan.views.marketplace import (
-    MarketPlaceDetailView,
-    MarketPlaceListView,
-    MarketPlacePurchasesListView,
-)
+from scan.views.json import get_snr_json, get_state_json, top_accounts_json
+from scan.views.marketplace import MarketPlaceDetailView, MarketPlaceListView, MarketPlacePurchasesListView
 from scan.views.miners import MinerListView
-from scan.views.peers import (
-    PeerMonitorDetailView,
-    PeerMonitorListView,
-    peers_charts_view,
-)
+from scan.views.peers import PeerMonitorDetailView, PeerMonitorListView, peers_charts_view
 from scan.views.pending_transactions import pending_transactions
 from scan.views.pools import PoolDetailView, PoolListView
 from scan.views.search import search_view
@@ -66,11 +58,11 @@ urlpatterns = [
     path("peer/<str:address>", PeerMonitorDetailView.as_view(), name="peer-detail"),
     path("alias/", AliasListView.as_view(), name="alias"),
     path("sub/", SubscriptionListView.as_view(), name="subscription"),
-    path("SNRinfo/", getSNRjson, name="snr-info"),
-    path("json/SNRinfo/", getSNRjson, name="snr-info"),
-    path("json/state/<str:address>", getStatejson, name="state"),
-    path("json/accounts/", TopAccountsJson, name="json-account"),
-    path("json/accounts/<int:results>", TopAccountsJson),
+    path("SNRinfo/", get_snr_json, name="snr-info"),
+    path("json/SNRinfo/", get_snr_json, name="snr-info"),
+    path("json/state/<str:address>", get_state_json, name="state"),
+    path("json/accounts/", top_accounts_json, name="json-account"),
+    path("json/accounts/<int:results>", top_accounts_json),
     path("pools/", PoolListView.as_view(), name="pools"),
     path("pool/<str:id>", PoolDetailView.as_view(), name="pool-detail"),
     path("miner/", MinerListView.as_view(), name="miner"),
@@ -82,4 +74,4 @@ if settings.DEBUG:
     import debug_toolbar
 
     urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
-    urlpatterns = [path('django_query_profiler/', include('django_query_profiler.client.urls'))] + urlpatterns
+    urlpatterns = [path("django_query_profiler/", include("django_query_profiler.client.urls"))] + urlpatterns

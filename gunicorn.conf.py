@@ -1,7 +1,9 @@
 # https://docs.gunicorn.org/en/stable/settings.html
 
 import multiprocessing
+
 from dotenv import load_dotenv
+
 load_dotenv()
 
 bind = "0.0.0.0:5000"

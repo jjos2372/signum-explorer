@@ -21,9 +21,7 @@ class PositiveBigIntegerFieldTest(TestCase):
     def test_from_db_value(self):
         self.assertEqual(self.field.from_db_value(None, None, None), None)
 
-        self.assertEqual(
-            self.field.from_db_value(self.MAX_UBIGINT, None, None), self.MAX_UBIGINT
-        )
+        self.assertEqual(self.field.from_db_value(self.MAX_UBIGINT, None, None), self.MAX_UBIGINT)
         self.assertEqual(self.field.from_db_value(2, None, None), 2)
         self.assertEqual(self.field.from_db_value(1, None, None), 1)
         self.assertEqual(self.field.from_db_value(0, None, None), 0)
@@ -39,13 +37,9 @@ class PositiveBigIntegerFieldTest(TestCase):
         self.assertEqual(self.field.get_prep_value(2), 2)
         self.assertEqual(self.field.get_prep_value(1), 1)
         self.assertEqual(self.field.get_prep_value(0), 0)
-        self.assertEqual(
-            self.field.get_prep_value(self.MAX_BIGINT - 1), self.MAX_BIGINT - 1
-        )
+        self.assertEqual(self.field.get_prep_value(self.MAX_BIGINT - 1), self.MAX_BIGINT - 1)
         self.assertEqual(self.field.get_prep_value(self.MAX_BIGINT), self.MAX_BIGINT)
-        self.assertEqual(
-            self.field.get_prep_value(self.MAX_BIGINT + 1), -1 * self.MAX_BIGINT - 1
-        )
+        self.assertEqual(self.field.get_prep_value(self.MAX_BIGINT + 1), -1 * self.MAX_BIGINT - 1)
 
 
 class TimestampFieldTest(TestCase):
@@ -53,14 +47,10 @@ class TimestampFieldTest(TestCase):
         self.field = TimestampField()
 
     def test_from_db_value(self):
-        self.assertEqual(
-            self.field.from_db_value(0, None, None), datetime.fromtimestamp(1407722400)
-        )
+        self.assertEqual(self.field.from_db_value(0, None, None), datetime.fromtimestamp(1407722400))
 
     def test_get_prep_value(self):
-        self.assertEqual(
-            self.field.get_prep_value(datetime.fromtimestamp(1407722400)), 0
-        )
+        self.assertEqual(self.field.get_prep_value(datetime.fromtimestamp(1407722400)), 0)
 
 
 class GetTxDescByTypes(TestCase):

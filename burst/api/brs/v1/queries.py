@@ -1,7 +1,8 @@
 """ https://github.com/burst-apps-team/burstcoin/blob/master/t/lib/BURST/API/RequestTypes.pm
 """
 
-import abc, os
+import abc
+import os
 
 from jsonschema import ValidationError, validate
 
@@ -134,7 +135,7 @@ class GetAsset(QueryBase):
     _http_method = "GET"
     _required_params = {"asset"}
 
-    version = os.environ.get('BRS_P2P_VERSION')
+    version = os.environ.get("BRS_P2P_VERSION")
 
     _response_json_schema = {
         "type": "object",
@@ -171,6 +172,7 @@ class GetAsset(QueryBase):
             "requestProcessingTime",
         ],
     }
+
 
 class GetBlockChainStatus(QueryBase):
     _request_type = "getBlockchainStatus"

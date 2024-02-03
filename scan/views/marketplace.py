@@ -37,9 +37,7 @@ class MarketPlacePurchasesListView(ListView):
     filter_set = None
 
     def get_queryset(self):
-        self.filter_set = MarketplaceFilter(
-            self.request.GET, queryset=super().get_queryset()
-        )
+        self.filter_set = MarketplaceFilter(self.request.GET, queryset=super().get_queryset())
         if self.filter_set.is_valid() and self.filter_set.data:
             qs = self.filter_set.qs[:10000]
         else:
@@ -72,18 +70,13 @@ class MarketPlaceDetailView(IntSlugDetailView):
         obj = context[self.context_object_name]
         obj.seller_name = get_account_name(obj.seller_id)
         purchases = (
-            Purchase.objects.using("java_wallet")
-            .using("java_wallet")
-            .filter(goods_id=obj.id)
-            .order_by("-height")[:15]
+            Purchase.objects.using("java_wallet").using("java_wallet").filter(goods_id=obj.id).order_by("-height")[:15]
         )
 
         for purchase in purchases:
             purchase.buyer_name = get_account_name(purchase.buyer_id)
 
         context["purchases"] = purchases
-        context["purchases_cnt"] = (
-            Purchase.objects.using("java_wallet").filter(goods_id=obj.id).count()
-        )
+        context["purchases_cnt"] = Purchase.objects.using("java_wallet").filter(goods_id=obj.id).count()
 
         return context

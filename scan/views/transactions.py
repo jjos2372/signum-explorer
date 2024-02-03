@@ -2,10 +2,8 @@ import csv
 
 from django.db.models.query_utils import Q
 from django.http import Http404
-from django.http.response import HttpResponse, StreamingHttpResponse
+from django.http.response import HttpResponse
 from django.views.generic import ListView
-from burst.constants import TxSubtypeBurstMining, TxType
-from scan.templatetags.burst_tags import burst_amount, num2rs, tx_load_recipients, tx_type
 
 from burst.libs.multiout import MultiOutPack
 from java_wallet.models import IndirectIncoming, Transaction
@@ -13,6 +11,7 @@ from scan.caching_data.last_height import CachingLastHeight
 from scan.caching_data.total_txs_count import CachingTotalTxsCount
 from scan.caching_paginator import CachingPaginator
 from scan.helpers.queries import get_account_name, get_unconfirmed_transactions
+from scan.templatetags.burst_tags import burst_amount, num2rs, tx_load_recipients, tx_type
 from scan.views.base import IntSlugDetailView
 from scan.views.filters.transactions import TxFilter
 
@@ -60,28 +59,26 @@ class TxListView(ListView):
         return context
 
 
-def tx_export_csv(request, id : int):
-
+def tx_export_csv(request, id: int):
     response = HttpResponse(
-        content_type='text/csv',
-        headers={'Content-Disposition': f'attachment; filename="{id}.csv"'},
+        content_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{id}.csv"'},
     )
     writer = csv.writer(response)
 
     indirects_query = (
-        IndirectIncoming.objects.using("java_wallet")
-        .values_list('transaction_id', flat=True)
-        .filter(account_id=id)
+        IndirectIncoming.objects.using("java_wallet").values_list("transaction_id", flat=True).filter(account_id=id)
     )
     txs_indirects = Transaction.objects.using("java_wallet").filter(id__in=indirects_query)
 
     txs = (
-            Transaction.objects.using("java_wallet")
-            .filter(Q(sender_id=id) | Q(recipient_id=id)).union(txs_indirects)
-            .order_by("-height")
-        )[:2000]
+        Transaction.objects.using("java_wallet")
+        .filter(Q(sender_id=id) | Q(recipient_id=id))
+        .union(txs_indirects)
+        .order_by("-height")
+    )[:2000]
 
-    header = ['ID', 'Height', 'timestamp', 'Type', 'From', 'To', 'Amount', 'Fee']
+    header = ["ID", "Height", "timestamp", "Type", "From", "To", "Amount", "Fee"]
     writer.writerow(header)
 
     id = int(id)
@@ -100,7 +97,18 @@ def tx_export_csv(request, id : int):
                         amount = r.amount
                         break
 
-        writer.writerow([tx.id, tx.height, tx.block_timestamp, tx_type(tx), from_rs, to_rs, burst_amount(amount), burst_amount(tx.fee)])
+        writer.writerow(
+            [
+                tx.id,
+                tx.height,
+                tx.block_timestamp,
+                tx_type(tx),
+                from_rs,
+                to_rs,
+                burst_amount(amount),
+                burst_amount(tx.fee),
+            ]
+        )
 
     return response
 
@@ -119,8 +127,7 @@ class TxDetailView(IntSlugDetailView):
         except Http404 as e:
             txs_pending = list(
                 filter(
-                    lambda x: x.get("transaction")
-                    == self.kwargs.get(self.slug_url_kwarg),
+                    lambda x: x.get("transaction") == self.kwargs.get(self.slug_url_kwarg),
                     get_unconfirmed_transactions(),
                 )
             )
@@ -147,14 +154,14 @@ class TxDetailView(IntSlugDetailView):
                 referenced_transaction_fullhash=None,  # TODO
                 attachment_bytes=tx["attachment_bytes"],
                 version=tx["version"],
-                has_message=False,  # TODO 'attachment': {'version.Message': 1, 'message': 'test', 'messageIsText': True}
-                has_encrypted_message=False,  # TODO 'attachment': {'version.EncryptedMessage': 1, 'encryptedMessage': {'data': '952f0ff3bff6b61dbf4bd3677598e81dc114c1f0d3000d6fd2dd522f4cfa9e5e0fa836f15d668c60ab1d1aea9d4b4a2434c21d8116a0812ddb2d4b04431a330c', 'nonce': 'da9ace93c11ea07f584a56c74964166a0209ffbb3f4fc14c7a92aa71ac663444', 'isText': True}}
+                has_message=False,
+                has_encrypted_message=False,
                 has_public_key_announcement=False,  # TODO
                 ec_block_height=tx["ecBlockHeight"],
                 ec_block_id=tx["ecBlockId"],
                 has_encrypttoself_message=False,  # TODO
             )
-            #obj.attachment = tx.get("attachment")
+            # obj.attachment = tx.get("attachment")
             obj.multiout = tx.get("multiout")
 
         return obj
