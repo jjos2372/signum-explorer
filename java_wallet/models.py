@@ -21,7 +21,7 @@ class Account(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
     class Meta:
         managed = True
         db_table = 'account'
@@ -34,7 +34,7 @@ class AccountBalance(models.Model):
     unconfirmed_balance = PositiveBigIntegerField()
     forged_balance = PositiveBigIntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
     class Meta:
         managed = True
         db_table = 'account_balance'
@@ -47,7 +47,7 @@ class AccountAsset(models.Model):
     quantity = PositiveBigIntegerField()
     unconfirmed_quantity = PositiveBigIntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -64,7 +64,7 @@ class Alias(models.Model):
     alias_uri = models.TextField()
     timestamp = TimestampField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
     tld = models.IntegerField(blank=True, null=True)
 
     class Meta:
@@ -79,7 +79,7 @@ class AliasOffer(models.Model):
     price = PositiveBigIntegerField()
     buyer_id = PositiveBigIntegerField(blank=True, null=True)
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -96,7 +96,7 @@ class AskOrder(models.Model):
     quantity = PositiveBigIntegerField()
     creation_height = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -149,7 +149,7 @@ class At(models.Model):
     creation_height = models.IntegerField()
     ap_code = models.BinaryField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
     ap_code_hash_id = PositiveBigIntegerField(blank=True, null=True)
 
     class Meta:
@@ -169,7 +169,7 @@ class AtState(models.Model):
     freeze_when_same_balance = models.IntegerField()
     min_activate_amount = PositiveBigIntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -186,7 +186,7 @@ class BidOrder(models.Model):
     quantity = PositiveBigIntegerField()
     creation_height = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -234,7 +234,7 @@ class Escrow(models.Model):
     deadline = models.IntegerField()
     deadline_action = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -248,7 +248,7 @@ class EscrowDecision(models.Model):
     account_id = PositiveBigIntegerField()
     decision = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -268,7 +268,7 @@ class Goods(models.Model):
     price = PositiveBigIntegerField()
     delisted = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -306,7 +306,7 @@ class Purchase(models.Model):
     discount = PositiveBigIntegerField()
     refund = PositiveBigIntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -320,7 +320,7 @@ class PurchaseFeedback(models.Model):
     feedback_data = models.TextField()
     feedback_nonce = models.CharField(max_length=32)
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -332,7 +332,7 @@ class PurchasePublicFeedback(models.Model):
     id = PositiveBigIntegerField()
     public_feedback = models.TextField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -346,7 +346,7 @@ class RewardRecipAssign(models.Model):
     recip_id = PositiveBigIntegerField()
     from_height = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True
@@ -363,7 +363,7 @@ class Subscription(models.Model):
     frequency = models.IntegerField()
     time_next = models.IntegerField()
     height = models.IntegerField()
-    latest = models.IntegerField()
+    latest = models.BooleanField()
 
     class Meta:
         managed = True

@@ -138,7 +138,7 @@ def check_is_contract(account_id: int) -> bool:
         )
     return at_id != None
 
-@cache_memoize(None)
+# @cache_memoize(None)
 
 def query_asset_fullhash(asset) ->(str):
     full_hash = (Transaction.objects.using("java_wallet")
