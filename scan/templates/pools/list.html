@@ -9,7 +9,24 @@ Signum Pools
 Total: {{ paginator.count|intcomma }}
 {% endblock %}
 {% block content %}
-
+  <!-- QRModal -->
+  <div class="modal fade" id="QRModal" tabindex="-1" role="dialog" aria-labelledby="QRModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-break small" id="QRModalLabel"> </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+          <div class="modal-body p-10 text-center bg-alt">
+                Want your own pool banner and link? Use <a href="https://ipr0310.github.io/src44-generator/" target="_blank">this Signum SRC44 generator</a>, select Human Account, fill in the name, description, home page (link to your pool), and Background Image (your IPFS banner) then copy the generated SRC44 info, open your pool wallet, go to the account info page, select Type JSON and paste the SRC44 JSON code into the box. Hit Accept and send the transaction.  It's that easy!  
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <h5 class="p-2">Pools
     {% if 'a' in request.GET %}
     <br class="d-md-none" />
@@ -33,7 +50,7 @@ Total: {{ paginator.count|intcomma }}
               <th scope="col">Last forged block</th>
               <th scope="col" class="d-none d-sm-table-cell">Timestamp</th>
               <th scope="col" class="text-center">Pool</th>
-              <th scope="col" class="text-center">Pool Link</th>
+              <th scope="col" class="text-center">Pool Link <a class="" href="#" data-toggle="modal" data-target="#QRModal" title="How to get your own pool banner"><i class="text-muted fa-solid fa-info-circle"></i></a></th>
               <th scope="col" class="d-none d-sm-table-cell">Registered miners</th>
             </tr>
             </thead>
@@ -62,5 +79,4 @@ Total: {{ paginator.count|intcomma }}
       </div>
     </div>
   </div>
-
 {% endblock %}

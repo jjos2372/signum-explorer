@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-
 from django.conf import settings
-from pycoingecko import CoinGeckoAPI
-
 from scan.caching_data.base import CachingDataBase
+
 import os
 import logging
+import requests
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -14,10 +14,9 @@ class ExchangeData:
     market_cap_usd: float = float(os.environ.get("COINGECKO_MKT_USD"))
     percent_change_24h: float = 0
 
-
 class CachingExchangeData(CachingDataBase):
     _cache_key = "exchange_data"
-    _cache_expiring = 3600  #SECONDS to hold value if API breaks
+    _cache_expiring = 3600  # SECONDS to hold value if API breaks
     live_if_empty = False
     default_data_if_empty = ExchangeData()
 
@@ -32,25 +31,27 @@ class CachingExchangeData(CachingDataBase):
 
     def _dumps(self, data):
         return data.__dict__
+    
 
-    def _get_live_data(self):    # Force cache to update unless testnet
+    def _get_live_data(self):  # Force cache to update unless testnet
         if settings.TEST_NET:
             return self.default_data_if_empty
 
         try:
             logger.info("Getting Exchange data from API")
-            cg = CoinGeckoAPI(retries=0)
-            response = cg.get_price(
-                ids=os.environ.get("COINGECKO_PRICE_ID"),
-                vs_currencies=["usd"],
-                include_market_cap="true",
-                include_24hr_change="true",
-            )["signum"]
-            logger.info(response)
+            headers = {
+                'Accepts': 'application/json',
+                'X-CMC_PRO_API_KEY': os.environ.get("COINMARKETCAP_API_KEY"),
+            }
+            url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol={os.environ.get('COIN_SYMBOL')}"
+            response = requests.get(url, headers=headers).json()
+            logger.info("Error message: %s", response['status']['error_message'])
+            data = response['data'][os.environ.get("COIN_SYMBOL")]
             return ExchangeData(
-                price_usd=response["usd"],
-                market_cap_usd=response["usd_market_cap"],
-                percent_change_24h=response["usd_24h_change"],
+                price_usd=data["quote"]["USD"]["price"],
+                market_cap_usd=data["quote"]["USD"]["market_cap"],
+                percent_change_24h=data["quote"]["USD"]["percent_change_24h"],
             )
-        except:
+        except Exception as e:
+            logger.error(f"Error fetching data: {e}")
             return self.default_data_if_empty

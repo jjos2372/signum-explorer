@@ -111,6 +111,7 @@ body, html {
 .card-search {
   border-radius: 0.5em;
   max-width: 650px;
+  background-color: transparent;
 }
 
 .card-footer {
